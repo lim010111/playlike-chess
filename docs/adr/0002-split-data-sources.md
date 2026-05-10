@@ -1,0 +1,5 @@
+# Split data sources: Lichess for Base, Chess.com for per-Player
+
+The Base model trains on the Lichess Open Database (monthly PGN dumps, filtered to rated blitz games with both players ≥1800 Elo), while per-Player Adapters train on each Player's Chess.com archive fetched via the PubAPI. We deliberately use two sources because the two stages have asymmetric requirements: Base needs millions of games at once, which Lichess provides as bulk downloads but Chess.com PubAPI does not (it is per-user); per-Player needs one named Player's archive, which Chess.com exposes directly but Lichess (where most famous Players are inactive) does not.
+
+Single-source alternatives were rejected: Chess.com-only would require scraping tens of thousands of users' archives to assemble a Base corpus (impractical against PubAPI rate limits), and Lichess-only would lose access to the public archives of the named Players the project's premise depends on. The split adds no meaningful complexity — both sources are PGN — and is reversible per stage if either source becomes unavailable.
