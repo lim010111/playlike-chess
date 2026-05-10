@@ -1,0 +1,32 @@
+# First Adapter end-to-end (Magnus)
+
+Status: ready-for-agent
+
+## Parent
+
+`.scratch/imitation-engine/PRD.md`
+
+## What to build
+
+Establish the per-Player Adapter pipeline end-to-end by training Magnus Carlsen's Adapter and serving it through the engine. Build the **Chess.com Player Ingester** (PubAPI archive paging, rate-limit-aware retry, time-control filter for blitz only). Build the **LoRA Adapter Wrapper** (rank 16 on attention QKVO projections only; FFN, embedding, and policy head frozen — see ADR-0001 and the per-Player Adapter form decision). Build the **Adapter Trainer** (Base entirely frozen, only Adapter parameters trained). Train the Magnus Adapter on his Chess.com blitz archive. Extend Inference Engine and `/move` to accept an `adapter_id` parameter and apply the corresponding Adapter at forward time. Add minimal UI text indicating which Player is being faced.
+
+This slice covers one Player end-to-end so that the per-Player infrastructure is fully validated before being applied to the full Roster (issue 05).
+
+## Acceptance criteria
+
+- [ ] Chess.com Player Ingester fetches Magnus's archive via PubAPI, paging through monthly archives, with rate-limit-aware retry/backoff
+- [ ] Time-control filter retains only blitz Games (3+0, 3+2, 5+0, 5+5 — Chess.com's `time_class == "blitz"`)
+- [ ] Magnus's filtered archive is converted to `(FEN, played-move)` Position shards
+- [ ] LoRA Adapter Wrapper attaches rank-16 LoRA modules to attention Q, K, V, O projections in every Transformer layer; FFN, embedding, and policy head are frozen and verifiably untouched after training
+- [ ] Adapter checkpoint round-trips: `save → load` produces bit-identical forward outputs
+- [ ] Adapter Trainer runs with Base frozen — Base parameter values do not change during training; Adapter parameters do change; training loss decreases
+- [ ] Magnus Adapter file is < 1 MB on disk
+- [ ] Inference Engine loads Base + Magnus Adapter at startup; `/move` accepts `adapter_id="magnus"` and returns Moves with the Adapter applied
+- [ ] Both decoding modes work: `decoding="greedy"` (deterministic, for evaluation top-1) and `decoding="sample"` (temperature ~0.7, for live gameplay)
+- [ ] UI shows "Playing against: Magnus Carlsen" while a Game is in progress
+- [ ] Self-play 100 Games with Magnus Adapter: 0 illegal Moves
+- [ ] Unit tests cover LoRA Adapter Wrapper (frozen-Base invariant + save/load round-trip)
+
+## Blocked by
+
+- Issue 03 (Real Base model training)
