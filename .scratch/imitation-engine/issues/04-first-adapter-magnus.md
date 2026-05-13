@@ -26,7 +26,7 @@ This slice covers one Player end-to-end so that the per-Player infrastructure is
 - [ ] Magnus Adapter file is < 1 MB on disk
 - [ ] Inference Engine loads Base + Magnus Adapter at startup; `/move` accepts `adapter_id="magnus"` and returns Moves with the Adapter applied
 - [ ] Both decoding modes work: `decoding="greedy"` (deterministic, for evaluation top-1) and `decoding="sample"` (temperature ~0.7, for live gameplay)
-- [ ] UI shows "Playing against: Magnus Carlsen" while a Game is in progress
+- [ ] UI shows "Playing against: Magnus Carlsen" while a Session is in progress (Magnus = the Session's Opponent — see `src/web/CONTEXT.md`)
 - [ ] Self-play 100 Games with Magnus Adapter: 0 illegal Moves
 - [ ] Unit tests cover LoRA Adapter Wrapper (frozen-Base invariant + save/load round-trip)
 - [ ] Model card committed at `models/cards/magnus.md` with the fields specified in PRD's Artifact contract (Player identity, source data with snapshot ID, training metadata, evaluation summary, caveats) — satisfies User Story #31 for the first Adapter

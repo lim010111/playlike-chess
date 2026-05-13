@@ -22,7 +22,7 @@ Greedy decoding only; no Adapter switching yet. The model will play poorly — t
 - [ ] Mini-Transformer (~1M params) trains for ~1 epoch on the toy corpus without crashing; loss decreases over training
 - [ ] Inference Engine loads the trained checkpoint, accepts a FEN, applies the legality mask before argmax, and returns a legal UCI Move via greedy decoding
 - [ ] FastAPI `/move` route now uses the ML engine instead of random selection (random-Move code removed or behind a flag)
-- [ ] User can play a complete chess Game in the browser against the ML model
+- [ ] User can play a complete Session in the browser against the ML model (see `src/web/CONTEXT.md` for Session definition)
 - [ ] In 100 random Positions sampled from real Games, the engine returns 0 illegal Moves
 - [ ] Unit tests exist for FEN Tokenizer (round-trip) and Action Vocabulary (legality mask alignment)
 
