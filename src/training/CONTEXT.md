@@ -28,8 +28,9 @@ A LoRA-style weight delta applied on top of the Base model that biases its outpu
 **Move-match accuracy (top-k)**:
 On a held-out set of Positions from a Player's archive, the fraction where the Player's actual move appears in the model's top-k policy logits when the matching Adapter is loaded. The primary training success metric.
 
-**Self-play Elo**:
-The strength rating estimated by having the model (Base + a given Adapter) play a tournament against reference engines or other Adapters. The primary strength check; complements move-match accuracy, which only measures imitation fit.
+**Ladder Elo**:
+The strength rating estimated by having the model (Base + a given Adapter) play a tournament against an external reference engine at calibrated Elo bands (v1: Fairy-Stockfish at ELO-limit 1500 / 1800 / 2100 / 2400). The highest band where the model scores ≥ 50% is the model's Ladder Elo bracket. Complements Move-match accuracy, which only measures imitation fit.
+_Avoid_: "Self-play Elo" — misleading, since the model is not playing against itself. The conventional self-play meaning (AlphaZero-style model-vs-self) is not what this metric is.
 
 ## Relationships
 
