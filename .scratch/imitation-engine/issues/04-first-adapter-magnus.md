@@ -16,7 +16,8 @@ This slice covers one Player end-to-end so that the per-Player infrastructure is
 
 - [ ] Chess.com Player Ingester fetches Magnus's archive via PubAPI, paging through monthly archives, with rate-limit-aware retry/backoff
 - [ ] Time-control filter retains only blitz Games (3+0, 3+2, 5+0, 5+5 — Chess.com's `time_class == "blitz"`)
-- [ ] Magnus's filtered archive is converted to `(FEN, played-move)` Position shards
+- [ ] Magnus's filtered archive is converted to `(FEN, played-move)` Position shards and written under `data/snapshots/magnus/<fetch-date>/` with a `manifest.json` (fetch date, archive URL list, game count, position count, content hash) — see ADR-0002
+- [ ] Adapter checkpoint metadata records the `snapshot_id` it was trained against
 - [ ] LoRA Adapter Wrapper attaches rank-16 LoRA modules to attention Q, K, V, O projections in every Transformer layer; FFN, embedding, and policy head are frozen and verifiably untouched after training
 - [ ] Adapter checkpoint round-trips: `save → load` produces bit-identical forward outputs
 - [ ] Adapter Trainer runs with Base frozen — Base parameter values do not change during training; Adapter parameters do change; training loss decreases
@@ -26,6 +27,7 @@ This slice covers one Player end-to-end so that the per-Player infrastructure is
 - [ ] UI shows "Playing against: Magnus Carlsen" while a Game is in progress
 - [ ] Self-play 100 Games with Magnus Adapter: 0 illegal Moves
 - [ ] Unit tests cover LoRA Adapter Wrapper (frozen-Base invariant + save/load round-trip)
+- [ ] Model card committed at `models/cards/magnus.md` with the fields specified in PRD's Artifact contract (Player identity, source data with snapshot ID, training metadata, evaluation summary, caveats) — satisfies User Story #31 for the first Adapter
 
 ## Blocked by
 

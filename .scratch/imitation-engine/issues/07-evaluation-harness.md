@@ -11,20 +11,21 @@ Status: ready-for-agent
 An offline evaluation script that takes a `(Base model, Adapter, Player)` triple and produces a JSON report covering all four agreed-upon metrics from the grilling session (Q12):
 
 1. **Move-match accuracy (top-1 / top-3)** — on the Player's hold-out games (the most recent ~10% of the Player's archive, set aside from training), compute how often the Player's actual Move appears in the model's top-1 / top-3 policy logits when the matching Adapter is loaded.
-2. **Self-play Elo via Fairy-Stockfish ladder** — the model plays against Fairy-Stockfish at ELO-limit settings 1500 / 1800 / 2100 / 2400. The highest step the model passes (≥ 50% score over a sufficient game count) is reported as the model's Elo bracket.
+2. **Ladder Elo (Fairy-Stockfish)** — the model plays against Fairy-Stockfish at ELO-limit settings 1500 / 1800 / 2100 / 2400. The highest step the model passes (≥ 50% score over a sufficient game count) is reported as the model's Ladder Elo bracket. (Previously called "Self-play Elo" — renamed to avoid confusion with AlphaZero-style model-vs-self self-play, which is not what this measures. See `src/training/CONTEXT.md`.)
 3. **Opening repertoire KL divergence** — collect the top-50 ECO codes from the first 10 plies of the Player's actual archive, of self-play games with the Adapter loaded, and of self-play games with Base only. Report `KL(Player ‖ Adapter)` and `KL(Player ‖ Base)`. The Adapter is expected to be at least 5× closer.
 4. **Illegal-move count** — over 100 self-play Games with the Adapter loaded, the count of illegal Moves emitted by the engine. Expected: 0.
 
-The harness compares each metric against the Q12 thresholds (top-1 ≥ 40%, top-3 ≥ 70%, Adapter Elo ≥ Base Elo, opening KL Adapter ≤ Base KL / 5, illegal-move count = 0) and assigns pass/fail per criterion. Overall pass = all four pass. Reports are emitted as structured JSON and committed under `evaluation/reports/` per release.
+The harness compares each metric against the Q12 thresholds (top-1 ≥ 40%, top-3 ≥ 70%, **Adapter Elo ≥ Base Elo − 100** (hard floor; >100 Elo regression is a fail signal that triggers v2 LoRA-scope expansion), opening KL Adapter ≤ Base KL / 5, illegal-move count = 0) and assigns pass/fail per criterion. Overall pass = all four pass. Reports are emitted as structured JSON and committed under `evaluation/reports/` per release.
 
 Note that the top-1 ≥ 40% threshold is a pre-measurement estimate; if the first run measures, say, 35%, the threshold will be re-calibrated rather than blocking the release. The harness should make recalibration easy (thresholds in a config file, not hard-coded in the metric code).
 
 ## Acceptance criteria
 
 - [ ] Evaluation Harness module accepts `(base_model, adapter, player_id)` and returns a structured `EvalReport` with all four metric values + per-criterion pass/fail
-- [ ] Hold-out is consistently the most recent ~10% of the Player's archive (split deterministic given the same archive)
+- [ ] Hold-out is consistently the most recent ~10% of the Player's **frozen snapshot** (`data/snapshots/<player_id>/<fetch-date>/`), not of the live Chess.com archive — split deterministic given the same snapshot ID, stable across re-evaluation regardless of upstream archive growth (see ADR-0002)
+- [ ] Evaluation report records the `snapshot_id` it ran against alongside the metric values
 - [ ] Top-k accuracy implementation is unit-tested against a mock model with scripted outputs
-- [ ] Self-play Elo ladder uses Fairy-Stockfish (CLI) with ELO-limit at the four specified levels; sufficient Game count per level for stable Elo estimate (e.g., 50+ games per step)
+- [ ] Ladder Elo measurement uses Fairy-Stockfish (CLI) with ELO-limit at the four specified levels; sufficient Game count per level for stable Elo estimate (e.g., 50+ games per step)
 - [ ] Opening repertoire KL is computed against three distributions: Player's archive (reference), Adapter self-play, Base-only self-play; both `KL(Player ‖ Adapter)` and `KL(Player ‖ Base)` reported
 - [ ] Illegal-move count is recorded over exactly 100 self-play Games per Adapter
 - [ ] Thresholds are read from a config file (e.g., `evaluation/thresholds.json`) so they can be adjusted without code change
