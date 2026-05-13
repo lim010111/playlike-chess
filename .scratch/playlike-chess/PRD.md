@@ -1,4 +1,4 @@
-# PRD — Imitation Engine v1
+# PRD — Playlike Chess v1
 
 Status: ready-for-agent
 

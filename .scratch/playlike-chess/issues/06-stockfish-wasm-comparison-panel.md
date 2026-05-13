@@ -4,7 +4,7 @@ Status: ready-for-agent
 
 ## Parent
 
-`.scratch/imitation-engine/PRD.md`
+`.scratch/playlike-chess/PRD.md`
 
 ## What to build
 
