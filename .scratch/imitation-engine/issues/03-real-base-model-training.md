@@ -22,6 +22,7 @@ Scale up the toy ML pipeline from issue 02 to the real Base model per the projec
 - [ ] Self-play 100 Games with the real Base: 0 illegal Moves
 - [ ] Manual play in the browser shows recognizably stronger Base play than the toy model (qualitative — at minimum, sensible openings and no obvious one-Move blunders in trivial Positions)
 - [ ] Final loss + accuracy logged values are committed alongside the checkpoint metadata
+- [ ] **Ladder bracket anchor measured once on the trained Base**: Base plays Fairy-Stockfish at ELO-limit 1500 / 1800 / 2100 / 2400 (≥50 games per step, blitz TC, sample decoding); the highest passed bracket is recorded in Base checkpoint metadata as `ladder_bracket`. This is a one-time external anchor — Adapter strength comparisons use the head-to-head harness in issue 07, not this number. See `src/training/CONTEXT.md` for why Ladder is treated as an anchor rather than a precise per-model metric.
 
 ## Blocked by
 

@@ -28,9 +28,19 @@ A LoRA-style weight delta applied on top of the Base model that biases its outpu
 **Move-match accuracy (top-k)**:
 On a held-out set of Positions from a Player's archive, the fraction where the Player's actual move appears in the model's top-k policy logits when the matching Adapter is loaded. The primary training success metric.
 
-**Ladder Elo**:
-The strength rating estimated by having the model (Base + a given Adapter) play a tournament against an external reference engine at calibrated Elo bands (v1: Fairy-Stockfish at ELO-limit 1500 / 1800 / 2100 / 2400). The highest band where the model scores ≥ 50% is the model's Ladder Elo bracket. Complements Move-match accuracy, which only measures imitation fit.
-_Avoid_: "Self-play Elo" — misleading, since the model is not playing against itself. The conventional self-play meaning (AlphaZero-style model-vs-self) is not what this metric is.
+**Ladder bracket** (external anchor):
+The coarse external rating band of the **Base model** alone, measured by having Base play Fairy-Stockfish at ELO-limit 1500 / 1800 / 2100 / 2400. The highest band where Base scores ≥ 50% is reported as Base's Ladder bracket. **Used as a one-time anchor** so the project can communicate "Base sits roughly in the X bracket of Fairy-Stockfish's reference pool" — not for Adapter-vs-Base comparison, which uses Head-to-head Elo delta instead.
+
+Elo is fundamentally a relative rating: a Ladder bracket value is meaningful only within Fairy-Stockfish's calibration pool, which is *not* the same pool as Lichess blitz Elo or FIDE OTB classical Elo. Cross-pool comparisons (e.g. "1800 Lichess blitz training data → 1800 Fairy-Stockfish ladder") do not transfer automatically. Ladder resolution is also coarse (300-Elo buckets) — sufficient as an anchor, insufficient to detect a 100-Elo regression.
+
+_Avoid_: "Ladder Elo" as a per-Adapter metric (it is Base-only, one-time), "Self-play Elo" (model does not play itself).
+
+**Head-to-head Elo delta**:
+The strength comparison between **Base** and a given **Adapter**, measured by playing N direct matches (v1: 100 games, blitz time control, alternating colors, both sides under sample decoding at temperature 0.7) between Base alone and Base + Adapter. Adapter's score percentage is converted to an Elo delta via the standard formula (`Δ = -400 · log10(1/score − 1)`). This is the metric the >100-Elo-regression fail signal is computed against.
+
+Why direct head-to-head instead of ladder for Adapter evaluation: ladder resolution (300-Elo buckets) is too coarse to detect a 100-Elo gap, and ladder-pool calibration is loose. Head-to-head measures the only thing we actually need — *how Adapter strength compares to its own Base* — without leaning on any external pool's yardstick.
+
+_Avoid_: collapsing "Head-to-head Elo delta" and "Ladder bracket" into one number — they measure different things on different pools.
 
 ## Relationships
 

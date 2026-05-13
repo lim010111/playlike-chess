@@ -44,7 +44,7 @@ A Transformer-based chess engine plus a web UI built around it. Training is offl
 25. As the project maintainer, I want the model to fit and train on a single 3080 10GB GPU, so that no cloud spend is required for v1.
 26. As the project maintainer, I want LoRA Adapters at rank 16 on attention QKVO projections only (FFN and policy head frozen), so that Adapters stay small and the Base model's general chess knowledge is preserved.
 27. As the project maintainer, I want each Adapter to be a file of a few hundred KB, so that all five Adapters can ship in the deployment without bloat.
-28. As the project maintainer, I want an Evaluation Harness that runs four checks (top-k Move-match accuracy, Ladder Elo vs Fairy-Stockfish, opening repertoire KL divergence, illegal-move count), so that I can decide pass/fail per Adapter without manual inspection.
+28. As the project maintainer, I want an Evaluation Harness that runs four checks (top-k Move-match accuracy, Head-to-head Elo delta vs Base, opening repertoire KL divergence, illegal-move count), so that I can decide pass/fail per Adapter without manual inspection. The Base's external Ladder bracket is measured once at Base training time (issue 03) and echoed into per-Adapter reports as context.
 29. As the project maintainer, I want training to log loss and metric curves, so that I can diagnose convergence and overfitting before evaluation.
 30. As the project maintainer, I want training checkpoints saved periodically, so that a crash partway through Base training does not lose hours of compute.
 31. As the project maintainer, I want a one-page model card per Player documenting source data, training metadata, and evaluation results, so that the deployment is self-documenting.
@@ -55,14 +55,14 @@ A Transformer-based chess engine plus a web UI built around it. Training is offl
 
 34. As a future contributor, I want the Adapter format to be loadable independent of the runtime serving code, so that an open-roster v2 can add new Adapters without redeploy.
 35. As a future contributor, I want clear ADRs for the irreversible architectural decisions, so that subsequent changes do not accidentally violate the foundations.
-36. As a future contributor, I want a `CONTEXT-MAP.md` plus per-context `CONTEXT.md` files defining vocabulary (Position, Game, Player, Roster, Base model, Adapter, Move-match accuracy, Ladder Elo, Inference Engine, Decoding mode, Legality mask, Policy distribution), so that I can read the codebase without re-deriving terminology.
+36. As a future contributor, I want a `CONTEXT-MAP.md` plus per-context `CONTEXT.md` files defining vocabulary (Position, Game, Player, Roster, Base model, Adapter, Move-match accuracy, Ladder bracket, Head-to-head Elo delta, Inference Engine, Decoding mode, Legality mask, Policy distribution), so that I can read the codebase without re-deriving terminology.
 
 ## Implementation Decisions
 
 ### Decisions inherited from grilling session
 
 - **Scope (Q1)**: (C) usable tool with a 1500–1800 Elo minimum target.
-- **Imitation definition (Q2)**: training loss = position-unit top-1 cross-entropy on (FEN, played-move). Evaluation is multi-metric: top-k Move-match accuracy + Ladder Elo + opening repertoire similarity.
+- **Imitation definition (Q2)**: training loss = position-unit top-1 cross-entropy on (FEN, played-move). Evaluation is multi-metric: top-k Move-match accuracy + Head-to-head Elo delta vs Base + opening repertoire similarity (plus a one-time Ladder bracket anchor on Base).
 - **Architecture (Q3, ADR-0001)**: Transformer over FEN-as-text tokens with a policy head over a fixed UCI action space (~1968 actions). Not LLM-style move-sequence decoder, not AlphaZero-style ResNet.
 - **Data sources (Q4, ADR-0002)**: Lichess Open Database for Base training (bulk monthly PGN dumps), Chess.com PubAPI for per-Player Adapter training (one user-by-user query per Player).
 - **Roster strategy (Q5, ADR-0003)**: closed roster, Adapters trained at dev-time, no runtime training infrastructure. Open-roster is a deliberate v2.
@@ -72,8 +72,8 @@ A Transformer-based chess engine plus a web UI built around it. Training is offl
 - **LoRA configuration (Q9)**: rank 16 on attention QKVO projections in all layers; FFN frozen; policy head frozen; embedding frozen. Base remains entirely frozen during Adapter training.
 - **Base data scale (Q10)**: 3 months of Lichess dumps, both players rated ≥1800, blitz only, normal-termination games — yields ~50M Positions after subsampling. Trained ~3 epochs.
 - **Roster (Q11)**: Magnus Carlsen, Hikaru Nakamura, Alireza Firouzja, Fabiano Caruana, Javokhir Sindarov. Sindarov's Chess.com archive volume is unverified at PRD time; v1 ships him as-is regardless of volume — if his Adapter underperforms on evaluation, that is an empirical learning rather than a release blocker.
-- **Evaluation thresholds (Q12)**: top-1 ≥ 40%, top-3 ≥ 70%; Base ≥ 1800 Elo on Fairy-Stockfish ladder; **Adapter Elo ≥ Base Elo - 100** (hard floor — >100 Elo regression is a fail and triggers v2 LoRA-scope expansion; stretch: Adapter ≥ Base; further stretch: Adapter ≥ Base + 100); opening repertoire KL with Adapter at least 5× closer to its Player than the Base is (this — not strength — is the primary imitation-fidelity metric); 0/100 illegal moves in self-play.
-- **Engine interface (Q13)**: Web HTTP/WebSocket only — no UCI protocol in v1. Decoding is hybrid: greedy for evaluation top-1 metric, sampling (temperature ~0.7) for live gameplay and Ladder Elo measurement.
+- **Evaluation thresholds (Q12)**: top-1 ≥ 40%, top-3 ≥ 70%; **Base sits in ≥ 1800 Ladder bracket** (one-time anchor on Fairy-Stockfish, see `src/training/CONTEXT.md` for why this is treated as an anchor not a precise number); **Head-to-head Adapter score ≥ 36%** against Base over 100 games at blitz TC, alternating colors, sample decoding (this corresponds via Elo formula to ≤100-Elo regression; >100 → fail and triggers v2 LoRA-scope expansion; stretch: Adapter score ≥ 50% = at least matches Base; further stretch: Adapter score ≥ 64% = ≥100 Elo stronger than Base); opening repertoire KL with Adapter at least 5× closer to its Player than the Base is (this — not strength — is the primary imitation-fidelity metric); 0/100 illegal moves in self-play.
+- **Engine interface (Q13)**: Web HTTP/WebSocket only — no UCI protocol in v1. Decoding is hybrid: greedy for evaluation top-1 metric, sampling (temperature ~0.7) for live gameplay and Head-to-head Elo measurement.
 - **Web stack (Q14)**: React + `react-chessboard` + `chess.js` frontend; FastAPI backend with the inference engine in the same process; `stockfish.wasm` Web Worker in the browser for the comparison panel.
 
 ### Modules to build
@@ -113,7 +113,7 @@ A Transformer-based chess engine plus a web UI built around it. Training is offl
 - **Archive snapshot manifest**: `data/snapshots/<player_id>/<YYYY-MM-DD>/manifest.json` recording fetch date, archive URL list, game count, position count, and content hash. Frozen at ingest time and never mutated in place — re-fetching the archive later produces a new snapshot. The Adapter, its hold-out split, and its Evaluation report all reference one snapshot ID. See ADR-0002 for the reproducibility contract.
 - Roster manifest: `src/training/roster.json` with `[{id, display_name, chess_com_username, time_control, style_note, snapshot_id}]`. `style_note` is **hand-curated, ≤1 sentence**, describing what the imitation actually represents (e.g. `"online blitz play, ~2800 Chess.com rating, aggressive tactical style"`). Authored at release time, not auto-generated.
 - Evaluation reports: one JSON per Adapter with all four check results plus the snapshot ID the evaluation was run against, attached to releases.
-- **Model card**: `models/cards/<player_id>.md` — one page per Roster Player, hand-written but populated from artifacts. Required fields: Player identity (display name, Chess.com username), source data (snapshot ID, fetch date, game count, position count, time-control filter), training metadata (Base checkpoint hash, LoRA rank + target modules, training steps, key hyperparameters), evaluation summary (top-1/3 Move-match, Ladder Elo bracket, opening KL ratios, illegal-move count), and caveats (e.g. "Imitates online blitz only; does not reflect classical OTB style"). Satisfies User Story #31.
+- **Model card**: `models/cards/<player_id>.md` — one page per Roster Player, hand-written but populated from artifacts. Required fields: Player identity (display name, Chess.com username), source data (snapshot ID, fetch date, game count, position count, time-control filter), training metadata (Base checkpoint hash, LoRA rank + target modules, training steps, key hyperparameters), evaluation summary (top-1/3 Move-match, Head-to-head Adapter-vs-Base score and derived Elo delta, Base's Ladder bracket as external anchor, opening KL ratios, illegal-move count), and caveats (e.g. "Imitates online blitz only; does not reflect classical OTB style"). Satisfies User Story #31.
 
 ## Testing Decisions
 
