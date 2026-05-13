@@ -5,7 +5,7 @@ This project produces a chess engine that, given a board position (FEN), returns
 ## Contexts
 
 - [Training](./src/training/CONTEXT.md) — offline pipeline: ingests game archives, trains the Base model on a broad corpus, and fine-tunes one Adapter per roster Player.
-- **Engine** — runtime server: loads the Base model + a selected Adapter, accepts a Position, returns a legal Move. *(CONTEXT.md to be added when first engine-specific term resolves.)*
+- [Engine](./src/engine/CONTEXT.md) — runtime server: loads the Base model + all Roster Adapters at startup, accepts a Position + Player choice, returns a legal Move. Single-worker, serialized GPU forward.
 - **Web** — browser-facing UI: lets the user choose a Player, play against the resulting model, and see Stockfish's recommendation alongside the model's. *(CONTEXT.md to be added when first UI-specific term resolves.)*
 
 ## Relationships
