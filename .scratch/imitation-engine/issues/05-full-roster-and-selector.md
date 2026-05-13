@@ -8,9 +8,9 @@ Status: ready-for-agent
 
 ## What to build
 
-Apply the per-Player infrastructure built in issue 04 to the remaining four Roster Players: Hikaru Nakamura, Alireza Firouzja, Fabiano Caruana, Javokhir Sindarov. Each Adapter follows the same protocol (Chess.com PubAPI ingestion, blitz only, LoRA rank 16 on attention QKVO). Add the **Roster manifest** at `src/training/roster.json` listing all five Players with `id`, `display_name`, `chess_com_username`, `time_control`, and a one-line `style_note`. Extend the API with `GET /roster` returning the manifest. Add a UI selector (dropdown or card list) so the user can pick their opponent before starting a Game; selected Player's name and style note are shown during play.
+Apply the per-Player infrastructure built in issue 04 to the remaining four Roster Players: Hikaru Nakamura, Alireza Firouzja, Fabiano Caruana, Javokhir Sindarov. Each Adapter follows the same protocol (Chess.com PubAPI ingestion, blitz only, rated only, opponent-rating-gap ±400 Elo per PRD Q-rating-gap, LoRA rank 16 on attention QKVO). Add the **Roster manifest** at `src/training/roster.json` listing all five Players with `id`, `display_name`, `chess_com_username`, `time_control`, and a one-line `style_note`. Extend the API with `GET /roster` returning the manifest. Add a UI selector (dropdown or card list) so the user can pick their opponent before starting a Game; selected Player's name and style note are shown during play.
 
-Note: Sindarov ships with whatever data is available — no minimum-volume gate for v1. If his Adapter underperforms on evaluation (issue 07), that is an empirical learning rather than a v1 release blocker.
+Note: Sindarov ships with whatever data is available — no minimum-volume gate for v1. If his Adapter underperforms on evaluation (issue 07), that is an empirical learning rather than a v1 release blocker. The ±400 rating-gap filter is *relative to the Player's own rating*, so it adapts to Sindarov's GM pool the same way it adapts to Magnus's Super-GM pool — no per-Player tuning needed.
 
 ## Acceptance criteria
 
