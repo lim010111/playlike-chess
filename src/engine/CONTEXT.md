@@ -18,7 +18,7 @@ Orthogonal to Player choice (any Adapter can be played in either mode) and to le
 **Legality mask**:
 The boolean tensor over the 1968-action UCI space applied before decoding to set illegal-Move logits to -∞. Computed in two stages:
 1. **Rule legality** — `python-chess` `board.legal_moves` from the FEN. Covers all chess rules whose verdict depends only on the current Position (piece movement, check, pin, en-passant, castling rights encoded in FEN).
-2. **History-aware legality** — kills moves that would cause threefold repetition. Computed from the `recent_positions` history that the Web context attaches to every `/move` request. The model is Markov over FEN, so without this stage the Inference Engine would have no protection against accidentally drawing a winning Position by repeating it (see ADR-0001 Markov section).
+2. **History-aware legality** — kills moves that would cause threefold repetition. Computed from the `move_history` (UCI moves from the Game's first move) that the Web context attaches to every `/move` request: the Engine replays the moves on a `python-chess` `Board`, then for each candidate Move pushes it and calls `board.is_repetition(3)`. Delegating to `python-chess` is deliberate — FIDE's "same Position" definition has subtle ep/castling/clock semantics that are easy to get wrong with manual FEN equality. The model is Markov over FEN, so without this stage the Inference Engine would have no protection against accidentally drawing a winning Position by repeating it (see ADR-0001 Markov section).
 
 The 50-move-rule clock lives in the FEN and is already handled by stage 1. 5-fold and 75-move (automatic) are detected client-side as game-over events; the Inference Engine itself does not refuse to move once they occur.
 

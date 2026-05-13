@@ -17,7 +17,7 @@ Greedy decoding only; no Adapter switching yet. The model will play poorly — t
 - [ ] Lichess Corpus Ingester accepts a small PGN file (toy fixture) and produces shards of `(FEN, played-move)` Positions, applying the standard filter (rated, blitz, both ≥1800 Elo, normal-termination)
 - [ ] FEN Tokenizer is lossless: any FEN encoded then decoded equals the original (round-trip property test)
 - [ ] Action Vocabulary's `legal_mask(board)` matches `python-chess`'s `set(board.legal_moves)` exactly across a battery of test boards
-- [ ] Legality mask exposes a history-aware variant `legal_mask(board, recent_positions)` that additionally kills threefold-repetition-causing Moves; unit test covers a constructed sequence where the same Position repeats twice in `recent_positions` and the move that would cause the 3rd appearance is masked out
+- [ ] Legality mask exposes a history-aware variant `legal_mask(board, move_history)` where `move_history` is the UCI move list from the Game's first move; it additionally kills threefold-repetition-causing Moves by replaying the history on a `python-chess` `Board` and using `board.is_repetition(3)` after pushing each candidate. Unit test covers a constructed move sequence that produces the same Position twice in history, and asserts the Move that would cause the 3rd appearance is masked out
 - [ ] Mini-Transformer (~1M params) trains for ~1 epoch on the toy corpus without crashing; loss decreases over training
 - [ ] Inference Engine loads the trained checkpoint, accepts a FEN, applies the legality mask before argmax, and returns a legal UCI Move via greedy decoding
 - [ ] FastAPI `/move` route now uses the ML engine instead of random selection (random-Move code removed or behind a flag)
