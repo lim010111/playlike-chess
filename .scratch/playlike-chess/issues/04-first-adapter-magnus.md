@@ -23,6 +23,7 @@ This slice covers one Player end-to-end so that the per-Player infrastructure is
 - [ ] LoRA Adapter Wrapper attaches rank-16 LoRA modules to attention Q, K, V, O projections in every Transformer layer; FFN, embedding, and policy head are frozen and verifiably untouched after training
 - [ ] Adapter checkpoint round-trips: `save → load` produces bit-identical forward outputs
 - [ ] Adapter Trainer runs with Base frozen — Base parameter values do not change during training; Adapter parameters do change; training loss decreases
+- [ ] **wandb experiment tracking** for the Adapter training run, tagged with `adapter_id="magnus"` so issue 05's full-Roster runs can be grouped/compared. Logged: per-step train loss, train top-1 accuracy, val loss + val top-1 accuracy on Magnus's held-out (~10% most-recent) Positions, learning rate, grad norm. Run config dict captures: LoRA rank/alpha, target modules (attention QKVO), Base checkpoint SHA, Magnus snapshot ID, optimizer, batch size, git commit SHA. Opening-KL on the held-out is logged once at end-of-training (the per-Player stylistic-divergence metric per PRD Q12). Offline mode acceptable
 - [ ] Magnus Adapter file is < 1 MB on disk
 - [ ] Inference Engine loads Base + Magnus Adapter at startup; `/move` accepts `adapter_id="magnus"` and returns Moves with the Adapter applied
 - [ ] Both decoding modes work: `decoding="greedy"` (deterministic, for evaluation top-1) and `decoding="sample"` (temperature ~0.7, for live gameplay)
