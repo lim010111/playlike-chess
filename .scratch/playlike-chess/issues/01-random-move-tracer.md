@@ -23,6 +23,7 @@ The slice exists primarily to de-risk the plumbing. Subsequent slices replace th
 - [ ] User can start a new Session without reloading the page
 - [ ] A Session can be played end-to-end (move 1 to Terminal state) without any engine error or stuck state
 - [ ] Move list in standard algebraic notation is visible during the Session
+- [ ] CI runs the backend test suite on every PR (this slice introduces the first `pyproject.toml` and CI workflow)
 
 ## Blocked by
 
