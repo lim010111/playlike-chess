@@ -1,3 +1,7 @@
 # ignore `/meetings`
 docs/meetings
 
+# Claude Code session-local state (per-worktree; not for sharing)
+.claude/handoffs/
+.claude/worktrees/
+
