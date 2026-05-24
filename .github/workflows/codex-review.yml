@@ -222,7 +222,7 @@ jobs:
           # sticky-comment builder, Claude validator) read. That step ALSO owns
           # the "Codex failed" fallback — we no longer guard parseability here.
           set +e
-          codex exec --json --output-schema .codex-review/schema.json --sandbox read-only "Run an adversarial review of the diff against origin/$BASE_REF" > .codex-review/codex-review.json 2> .codex-review/codex-review.stderr
+          codex exec --json --output-schema .codex-review/schema.json --dangerously-bypass-approvals-and-sandbox "Run an adversarial review of the diff against origin/$BASE_REF" > .codex-review/codex-review.json 2> .codex-review/codex-review.stderr
           codex_exit=$?
           set -e
           echo "codex_exit=$codex_exit" >> "$GITHUB_OUTPUT"
