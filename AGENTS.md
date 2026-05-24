@@ -12,6 +12,7 @@
   - [`domain.md`](./docs/agents/domain.md) — how skills should consume `CONTEXT.md` / `docs/adr/` when exploring.
   - [`issue-tracker.md`](./docs/agents/issue-tracker.md) — issues as markdown under `.scratch/<feature>/`.
   - [`triage-labels.md`](./docs/agents/triage-labels.md) — five canonical triage roles.
+- [`docs/merge-gate.md`](./docs/merge-gate.md) — pre-merge Codex adversarial-review gate: severity matrix, audited bypass label, soft → hard promotion path. Long-form operations playbook lives at [`docs/merge-gate-operations.md`](./docs/merge-gate-operations.md).
 
 ## Agent skills
 
