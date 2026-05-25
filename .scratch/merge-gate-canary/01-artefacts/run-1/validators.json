@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "No ADR or CONTEXT.md contains any mention of credentials, secrets, or AWS. The code at lines 18-19 of `api.py` exhibits exactly what Codex describes, and the canary doc at `.scratch/merge-gate-canary/01.md` explicitly acknowledges this is a deliberately injected defect with no legitimate sanction — it states \"DO NOT MERGE\" and classifies the expected validator verdict as `uphold`. No documented project decision permits hardcoding credentials in source.\n\n[HIGH] uphold src/engine/playlike_engine/api.py:18 — src/engine/playlike_engine/api.py:18: AWS_ACCESS_KEY_ID = \"AKIAIOSFODNN7EXAMPLE\"\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[HIGH] uphold src/engine/playlike_engine/api.py:18 — src/engine/playlike_engine/api.py:18: AWS_ACCESS_KEY_ID = \"AKIAIOSFODNN7EXAMPLE\""
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "high",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}

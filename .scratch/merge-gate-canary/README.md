@@ -15,18 +15,31 @@ Briefs and captured gate output for the canary suite tracked by
 ## Workflow per canary
 
 1. Branch off latest `main`: `git checkout -b canary/NN-short-name`.
-2. Make the one-line defect injection described in the brief.
+2. Make the one-line defect injection. **Optionally** stage a
+   placeholder `<NN>.md` brief on the canary branch (the
+   "before-run" sections — path / defect / expected) so the
+   commit message can reference the brief by path.
 3. `gh pr create --draft --label canary --title "[canary] ..."`
    with body banner `**DO NOT MERGE — merge-gate canary, see
    claude-harness-work#09.**`.
 4. Wait for `merge-gate / codex-review` workflow to finish.
-5. `gh run download <id> -D .scratch/merge-gate-canary/<NN>-artefacts/run-1/`.
-6. Copy sticky comment text into `run-1/sticky.md`
-   (`gh pr view <PR#> --comments` filtered to the gate comment).
-7. Fill in the brief's run record and the actual-vs-expected
-   section.
-8. `gh pr close <PR#> --delete-branch`.
-9. Commit the brief + artefacts.
+5. **Switch back to `main` *before* writing the run record** —
+   the brief's filled-in run record and the downloaded artefacts
+   are tracked on `main`, never on the canary branch (otherwise
+   `gh pr close --delete-branch` aborts on dirty working tree).
+   `git checkout main`.
+6. `gh run download <id> -D .scratch/merge-gate-canary/<NN>-artefacts/run-1/`
+   (flatten the `codex-review/` subdir if `actions/upload-artifact`
+   wraps the files).
+7. Capture sticky comment text into `run-1/sticky.md`
+   (`gh pr view <PR#> --comments > run-1/sticky.md`).
+8. Fill in the brief's run record and actual-vs-expected on
+   `main` (write the full brief file at
+   `.scratch/merge-gate-canary/<NN>.md`).
+9. `gh pr close <PR#> --delete-branch` to remove the canary
+   PR and its remote branch; `git branch -D canary/NN-...`
+   for the local branch.
+10. Commit the brief + artefacts on `main`.
 
 ## Why canaries are labelled
 

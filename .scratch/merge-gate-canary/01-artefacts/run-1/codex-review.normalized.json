@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "The diff introduces hardcoded AWS-style access key material into the FastAPI engine module. I did not run tests; this is a targeted adversarial review of the changed diff against `origin/main`.",
+    "findings": [
+      {
+        "severity": "high",
+        "title": "Hardcoded AWS credentials committed in engine API",
+        "body": "The new module-level `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` constants embed AWS credential-shaped values directly in source. Even if these are example credentials for a canary, this creates a secret-scanner hit, normalizes committing long-lived cloud credentials, and would be copied into any packaged or deployed engine code that imports `playlike_engine.api`. The adjacent TODO confirms the intended source should be environment/config rather than source control.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 18,
+        "line_end": 19,
+        "confidence": 0.99,
+        "recommendation": "Remove the constants from source. If the engine needs AWS configuration later, load it from environment variables or the cloud SDK credential chain at startup, and keep only non-secret config names or documented env var names in the repo."
+      }
+    ],
+    "next_steps": [
+      "Remove the hardcoded AWS credential-shaped constants before merge.",
+      "If this branch is only a merge-gate canary, close it without merging as described in `.scratch/merge-gate-canary/01.md`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}
