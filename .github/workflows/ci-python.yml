@@ -1,0 +1,85 @@
+name: CI (Python)
+
+# Workflow is intentionally NOT path-filtered at the trigger level:
+# `pull_request.paths` would silently skip the workflow on PRs that don't
+# touch engine files, leaving the check status absent. If anyone later sets
+# this job as a required branch-protection check, those PRs would be stuck
+# waiting forever. Instead, the workflow always runs and reports a status;
+# the engine-specific steps below gate on a path filter computed inside
+# the job (`dorny/paths-filter`).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # `dorny/paths-filter` queries the GitHub Pulls API
+  # (`GET /repos/.../pulls/{number}/files`) on pull_request events to compute
+  # the changed-files list; that endpoint requires `pull-requests: read`.
+  # Without it the filter step fails on PRs and the workflow cannot report
+  # a status — defeating the always-runs-and-reports property this design
+  # depends on for required-check safety.
+  pull-requests: read
+
+jobs:
+  test:
+    name: lint · typecheck · test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect engine-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            engine:
+              - 'src/engine/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/ci-python.yml'
+
+      - name: Skip notice
+        if: steps.filter.outputs.engine == 'false'
+        run: echo "No engine-relevant changes; backend lint/typecheck/test steps skipped. Check reports green."
+
+      - name: Install uv
+        # Pinned to a full semver tag because astral-sh/setup-uv stopped
+        # publishing the rolling short-form major-version tag (`v8`) from
+        # v8.0.0 onward (release notes: "Immutable releases and secure
+        # tags"). Bump deliberately when a new minor lands.
+        if: steps.filter.outputs.engine == 'true'
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Sync workspace
+        if: steps.filter.outputs.engine == 'true'
+        run: uv sync --locked
+
+      - name: Lint (ruff)
+        if: steps.filter.outputs.engine == 'true'
+        working-directory: src/engine
+        run: uv run ruff check .
+
+      - name: Format check (ruff format)
+        if: steps.filter.outputs.engine == 'true'
+        working-directory: src/engine
+        run: uv run ruff format --check .
+
+      - name: Typecheck (pyrefly)
+        if: steps.filter.outputs.engine == 'true'
+        working-directory: src/engine
+        run: uv run pyrefly check playlike_engine
+
+      - name: Test (pytest)
+        if: steps.filter.outputs.engine == 'true'
+        working-directory: src/engine
+        run: uv run pytest -v playlike_engine
