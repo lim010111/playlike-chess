@@ -17,7 +17,7 @@ app = FastAPI(title="Playlike Chess Engine", version="0.0.1")
 
 class MoveRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    fen: str
+    position: str
 
 
 class MoveResponse(BaseModel):
@@ -28,9 +28,9 @@ class MoveResponse(BaseModel):
 @app.post("/move", response_model=MoveResponse)
 def move(req: MoveRequest) -> MoveResponse:
     try:
-        board = chess.Board(req.fen)
+        board = chess.Board(req.position)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=f"invalid FEN: {exc}") from exc
+        raise HTTPException(status_code=422, detail=f"invalid position: {exc}") from exc
     try:
         chosen = pick_random_legal_move(board)
     except NoLegalMovesError as exc:
