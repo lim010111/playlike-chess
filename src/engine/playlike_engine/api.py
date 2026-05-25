@@ -28,11 +28,16 @@ class MoveResponse(BaseModel):
 @app.post("/move", response_model=MoveResponse)
 def move(req: MoveRequest) -> MoveResponse:
     try:
-        board = chess.Board(req.fen)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=f"invalid FEN: {exc}") from exc
-    try:
-        chosen = pick_random_legal_move(board)
-    except NoLegalMovesError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return MoveResponse(move_uci=chosen.uci())
+        try:
+            board = chess.Board(req.fen)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"invalid FEN: {exc}") from exc
+        try:
+            chosen = pick_random_legal_move(board)
+        except NoLegalMovesError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return MoveResponse(move_uci=chosen.uci())
+    except HTTPException:
+        raise
+    except Exception:  # noqa: BLE001 — staging hardening
+        raise HTTPException(status_code=500) from None
