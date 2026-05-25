@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Found one contract-breaking change in the `/move` request schema. I could not run the configured test command because `uv` is not installed in this runner; direct `python -m pytest` also cannot run because pytest/FastAPI are missing.",
+    "findings": [
+      {
+        "severity": "high",
+        "title": "`/move` no longer accepts the documented `{ fen: string }` payload",
+        "body": "The request model was renamed from `fen` to `position` while keeping `extra=\"forbid\"`. Any existing or planned client following the project contract will now POST `{ \"fen\": ... }` and receive a 422 because `fen` is treated as an extra field and `position` is missing. This contradicts the Phase 1 acceptance criterion in `.scratch/playlike-chess/issues/01-random-move-tracer.md` and the Phase 2 frontend contract, both of which specify posting the FEN to `/move`. Restore `fen`, or add a backward-compatible alias and update the docs/tests deliberately.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 18,
+        "line_end": 20,
+        "confidence": 0.96,
+        "recommendation": "Keep the wire field as `fen` for this API, or support both `fen` and `position` with tests that prove `{ \"fen\": STARTING_FEN }` still returns 200."
+      }
+    ],
+    "next_steps": [
+      "Fix the request schema compatibility issue.",
+      "Re-run engine tests in an environment with `uv` or the project dev dependencies installed."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

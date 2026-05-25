@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[HIGH] uphold src/engine/playlike_engine/api.py:20 — src/engine/playlike_engine/api.py:20: `position: str` breaks the `{ fen: string }` contract in .scratch/playlike-chess/issues/01-random-move-tracer.md:29\n",
+      "lines": [
+        "[HIGH] uphold src/engine/playlike_engine/api.py:20 — src/engine/playlike_engine/api.py:20: `position: str` breaks the `{ fen: string }` contract in .scratch/playlike-chess/issues/01-random-move-tracer.md:29"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "high",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}
