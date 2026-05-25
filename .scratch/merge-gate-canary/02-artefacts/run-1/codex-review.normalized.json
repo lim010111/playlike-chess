@@ -1,0 +1,26 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Adversarial review found one blocking issue in the diff against origin/main. I could not run the project test suite here because `uv`, `pytest`, and runtime deps such as `fastapi` are not installed in the environment.",
+    "findings": [
+      {
+        "severity": "high",
+        "title": "Catch-all handler suppresses unexpected endpoint failures",
+        "body": "The new outer `except Exception` converts every unexpected runtime/programming error in `/move` into a bare `HTTPException(500)` with `from None`. That suppresses the original traceback/chaining and treats real bugs in FEN parsing internals, move selection, or response construction as ordinary handled HTTP errors. In practice this removes the diagnostic signal FastAPI/Starlette would normally surface for unhandled exceptions, making future engine or adapter failures much harder to detect and triage.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 42,
+        "line_end": 43,
+        "confidence": 0.97,
+        "recommendation": "Remove the broad catch and let unexpected exceptions propagate to the framework/error middleware, or log them with `logger.exception(...)` before returning a sanitized 500 that preserves server-side observability."
+      }
+    ],
+    "next_steps": [
+      "Remove or replace the broad `except Exception` block.",
+      "Add a regression test that monkeypatches `pick_random_legal_move` to raise an unexpected exception and verifies it is not silently converted into a handled bare HTTPException.",
+      "Re-run `uv run --project src/engine pytest -q` in an environment with the project tooling installed."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[HIGH] uphold src/engine/playlike_engine/api.py:42 — src/engine/playlike_engine/api.py:42: `except Exception:  # noqa: BLE001 — staging hardening` / `raise HTTPException(status_code=500) from None`\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[HIGH] uphold src/engine/playlike_engine/api.py:42 — src/engine/playlike_engine/api.py:42: `except Exception:  # noqa: BLE001 — staging hardening` / `raise HTTPException(status_code=500) from None`"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "high",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}
