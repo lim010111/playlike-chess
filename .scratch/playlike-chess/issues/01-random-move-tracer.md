@@ -28,7 +28,7 @@ Phases must be merged in order — Phase 2 has no backend without Phase 1, Phase
 
 - [ ] FastAPI server exposes `POST /move` accepting `{ fen: string }` and returning `{ move_uci: string }`
 - [ ] Backend uses `python-chess` `board.legal_moves` and returns a uniformly random selection
-- [ ] CI runs the backend test suite on every PR (this phase introduces the first `pyproject.toml` and the backend CI workflow)
+- [ ] Backend CI workflow runs on every PR and always reports a status check (so the check is safe to set as a required branch-protection rule). Engine-relevant steps — lint, typecheck, test — are path-filtered inside the job on `src/engine/**` so they only execute when engine files change. (This phase introduces the first `pyproject.toml` and the backend CI workflow.)
 
 ### Phase 2 — Frontend skeleton (PR 2)
 

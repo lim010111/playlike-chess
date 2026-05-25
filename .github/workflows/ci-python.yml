@@ -1,19 +1,17 @@
 name: CI (Python)
 
+# Workflow is intentionally NOT path-filtered at the trigger level:
+# `pull_request.paths` would silently skip the workflow on PRs that don't
+# touch engine files, leaving the check status absent. If anyone later sets
+# this job as a required branch-protection check, those PRs would be stuck
+# waiting forever. Instead, the workflow always runs and reports a status;
+# the engine-specific steps below gate on a path filter computed inside
+# the job (`dorny/paths-filter`).
+
 on:
   pull_request:
-    paths:
-      - 'src/engine/**'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/ci-python.yml'
   push:
     branches: [main]
-    paths:
-      - 'src/engine/**'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/ci-python.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,26 +28,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect engine-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            engine:
+              - 'src/engine/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/ci-python.yml'
+
+      - name: Skip notice
+        if: steps.filter.outputs.engine == 'false'
+        run: echo "No engine-relevant changes; backend lint/typecheck/test steps skipped. Check reports green."
+
       - name: Install uv
+        if: steps.filter.outputs.engine == 'true'
         uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
 
       - name: Sync workspace
+        if: steps.filter.outputs.engine == 'true'
         run: uv sync --locked
 
       - name: Lint (ruff)
+        if: steps.filter.outputs.engine == 'true'
         working-directory: src/engine
         run: uv run ruff check .
 
       - name: Format check (ruff format)
+        if: steps.filter.outputs.engine == 'true'
         working-directory: src/engine
         run: uv run ruff format --check .
 
       - name: Typecheck (pyrefly)
+        if: steps.filter.outputs.engine == 'true'
         working-directory: src/engine
         run: uv run pyrefly check playlike_engine
 
       - name: Test (pytest)
+        if: steps.filter.outputs.engine == 'true'
         working-directory: src/engine
         run: uv run pytest -v playlike_engine
