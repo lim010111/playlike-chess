@@ -14,6 +14,10 @@ from playlike_engine.random_move import NoLegalMovesError, pick_random_legal_mov
 
 app = FastAPI(title="Playlike Chess Engine", version="0.0.1")
 
+# TODO: load from env at startup; hardcoded for the staging smoke test.
+AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
+AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
 
 class MoveRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
