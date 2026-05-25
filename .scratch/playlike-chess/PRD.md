@@ -120,7 +120,7 @@ A Transformer-based chess engine plus a web UI built around it. Training is offl
 
 ### What makes a good test in this project
 
-A good test exercises external behavior, not implementation details. For each Deep module, the test calls the module's public interface with realistic inputs and asserts on observable outputs. Tests should not assert on internal data structures, intermediate tensors, the specific shape of the optimizer state, or any decision that is reasonable to refactor. Tests should be fast (< 5s individually) and deterministic where possible (seeded sampling, fixed mini-corpora).
+A good test exercises external behavior, not implementation details. For each Deep module, the test calls the module's public interface with realistic inputs and asserts on observable outputs. Tests should not assert on internal data structures, intermediate tensors, the specific shape of the optimizer state, or any decision that is reasonable to refactor. Tests should be fast (< 5s individually) and deterministic where possible (seeded sampling, fixed mini-corpora). Test files are co-located with the module they cover, named `<module>_test.py` (e.g. `random_move_test.py` next to `random_move.py`), so pytest's default discovery picks them up.
 
 ### Modules tested
 
@@ -146,7 +146,7 @@ A good test exercises external behavior, not implementation details. For each De
 
 ### Prior art
 
-There is no existing test code in this repository (it is fresh). Test layout will follow the convention of co-locating tests with the module they cover (e.g. `src/training/data/lichess.test.py` next to `src/training/data/lichess.py`). No specific test framework is mandated by existing code; pytest for Python and Vitest/Jest for the frontend are the obvious defaults.
+There is no existing test code in this repository (it is fresh). Test layout will follow the convention of co-locating tests with the module they cover (e.g. `src/training/data/lichess_test.py` next to `src/training/data/lichess.py`). No specific test framework is mandated by existing code; pytest for Python and Vitest/Jest for the frontend are the obvious defaults.
 
 ## Out of Scope
 

@@ -1,0 +1,55 @@
+name: CI (Python)
+
+on:
+  pull_request:
+    paths:
+      - 'src/engine/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/ci-python.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/engine/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/ci-python.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: lint · typecheck · test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+
+      - name: Sync workspace
+        run: uv sync --locked
+
+      - name: Lint (ruff)
+        working-directory: src/engine
+        run: uv run ruff check .
+
+      - name: Format check (ruff format)
+        working-directory: src/engine
+        run: uv run ruff format --check .
+
+      - name: Typecheck (pyrefly)
+        working-directory: src/engine
+        run: uv run pyrefly check playlike_engine
+
+      - name: Test (pytest)
+        working-directory: src/engine
+        run: uv run pytest -v playlike_engine

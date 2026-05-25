@@ -5,3 +5,10 @@ docs/meetings
 .claude/handoffs/
 .claude/worktrees/
 
+# Python — venv and tool caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
