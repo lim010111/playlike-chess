@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[MEDIUM] uphold src/engine/playlike_engine/api.py:23 — src/engine/playlike_engine/api.py:24: docstring states client-side correlation but token is never in response or header; MoveResponse returns only move_uci\n\nblock_count: 0\nbypass_eligible: yes\naction: merge ok\n",
+      "lines": [
+        "[MEDIUM] uphold src/engine/playlike_engine/api.py:23 — src/engine/playlike_engine/api.py:24: docstring states client-side correlation but token is never in response or header; MoveResponse returns only move_uci"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "medium",
+      "verdict": "uphold",
+      "block": false
+    }
+  ]
+}

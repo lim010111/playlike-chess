@@ -1,0 +1,24 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Reviewed the diff against origin/main. The only changed file is src/engine/playlike_engine/api.py. I found one low-severity observability bug; no merge-blocking issues. Tests could not be run because this runner lacks uv, pytest, and ruff.",
+    "findings": [
+      {
+        "severity": "low",
+        "title": "Generated correlation token is never exposed to the client",
+        "body": "The new per-request token is logged server-side, but the /move response model still only returns move_uci and no response header is set. Since clients never receive the generated value, they cannot use it for the stated client-side request correlation; operators will see opaque unique tokens in logs with nothing the client can match against. This makes the new observability feature effectively non-functional for client/server correlation.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 41,
+        "line_end": 42,
+        "confidence": 0.9,
+        "recommendation": "Either accept and log a client-provided request/correlation ID, or return the generated token in a response header such as X-Request-ID and test that it is present."
+      }
+    ],
+    "next_steps": [
+      "Run the engine test/lint suite in an environment with uv installed: `uv run --project src/engine pytest` and `uv run --project src/engine ruff check`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

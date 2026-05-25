@@ -1,0 +1,35 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Found two non-blocking issues in the one-file diff. I could not run tests because `pytest` and `uv` are not installed in this environment; `git diff --check origin/main...HEAD` passed.",
+    "findings": [
+      {
+        "severity": "medium",
+        "title": "Generated correlation token is never exposed to the client",
+        "body": "The new per-request token is logged server-side, but `/move` still returns only `move_uci` and does not set a response header or accept a client-supplied request id. That means the stated client-side correlation use case cannot work: the client has no token to match against server logs.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 41,
+        "line_end": 42,
+        "confidence": 0.94,
+        "recommendation": "Return the same value in a response header such as `X-Request-ID`, or accept and log a client-provided request id. Add an API test asserting the correlation id is visible to the caller."
+      },
+      {
+        "severity": "low",
+        "title": "Token generation consumes the same global RNG used for move selection",
+        "body": "`_new_engine_session_token()` calls `random.choice` 16 times immediately before `pick_random_legal_move(board)`, which also defaults to the module-global `random`. This couples request-id generation to engine move selection and makes seeded/debug replay behavior depend on an unrelated logging detail.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 23,
+        "line_end": 26,
+        "confidence": 0.82,
+        "recommendation": "Generate correlation ids with an RNG independent of gameplay randomness, for example `secrets.token_urlsafe()` or `uuid.uuid4()`, then leave `random_move` as the only consumer of the gameplay RNG."
+      }
+    ],
+    "next_steps": [
+      "Install the project test runner or run in the CI image, then execute `pytest src/engine/playlike_engine -q`.",
+      "Add coverage for whichever request-correlation contract is intended: response header, response body field, or client-supplied request id."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

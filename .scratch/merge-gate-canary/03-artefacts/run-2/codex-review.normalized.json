@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Found one actionable issue in the diff. I could not run the configured verification because `uv`, `pytest`, and `ruff` are not installed in this runner.",
+    "findings": [
+      {
+        "severity": "medium",
+        "title": "Generated correlation token is never exposed to the client",
+        "body": "The new per-request token is created and logged server-side, but `/move` still returns only `move_uci` and the request schema does not accept any client-provided correlation ID. That means a browser/client cannot know this value and cannot use it for the stated client-side request correlation; operators will see opaque tokens in logs that cannot be matched back to client events. This is especially misleading because the helper names it a session token even though the Engine context says the server is stateless per request.",
+        "file": "src/engine/playlike_engine/api.py",
+        "line_start": 23,
+        "line_end": 42,
+        "confidence": 0.91,
+        "recommendation": "Either return the correlation ID in the response/header, or accept and log a client-supplied request ID such as `X-Request-ID`. If this is only internal tracing, rename it away from `session token` and make the log message reflect that."
+      }
+    ],
+    "next_steps": [
+      "Verification attempted: `uv run --project src/engine pytest` and `uv run --project src/engine ruff check .` both failed because `uv` is unavailable.",
+      "Fallback checks also failed because the system Python lacks `pytest` and `ruff`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

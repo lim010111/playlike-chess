@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "The code at line 41–42 confirms exactly what Codex describes: `token = _new_engine_session_token()` is generated and `log.info(\"engine session token: %s\", token)` logs it server-side, but `MoveResponse` (line 34–36) contains only `move_uci` and the token is never returned to the client or set as a response header.\n\nHowever, the function's docstring on line 24 says `\"Per-request session token logged for client-side request correlation.\"` — the phrase \"logged for client-side request correlation\" is the stated purpose Codex challenges. The git commit message for this change explicitly labels this a canary test (`[canary] C3 insecure RNG for session token`) and describes the feature as a deliberate construct to test the validator, noting the expected finding from Codex is insecure RNG — not the correlation-exposure gap this finding targets.\n\nThe commit message does not document any design decision that the token is intentionally server-side-only (and the docstring's \"client-side request correlation\" language directly contradicts that idea). No ADR, CONTEXT.md, or doc passage sanctions a design where a \"client-side correlation\" token is never sent to the client. The finding holds up against the code as written.\n\n[LOW] uphold src/engine/playlike_engine/api.py:41 — src/engine/playlike_engine/api.py:42: log.info(\"engine session token: %s\", token) — token never included in MoveResponse or response headers\n\nblock_count: 0\nbypass_eligible: yes\naction: merge ok\n",
+      "lines": [
+        "[LOW] uphold src/engine/playlike_engine/api.py:41 — src/engine/playlike_engine/api.py:42: log.info(\"engine session token: %s\", token) — token never included in MoveResponse or response headers"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "low",
+      "verdict": "uphold",
+      "block": false
+    }
+  ]
+}
