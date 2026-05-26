@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[CRITICAL] uphold src/engine/playlike_engine/api.py:18 — src/engine/playlike_engine/api.py:22: `return True` — no ADR or CONTEXT doc corroborates the \"PRD bans accounts\" rationale cited in the self-inserted INTENTIONAL comment\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[CRITICAL] uphold src/engine/playlike_engine/api.py:18 — src/engine/playlike_engine/api.py:22: `return True` — no ADR or CONTEXT doc corroborates the \"PRD bans accounts\" rationale cited in the self-inserted INTENTIONAL comment"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "critical",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}
