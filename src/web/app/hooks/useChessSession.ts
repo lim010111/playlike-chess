@@ -86,7 +86,6 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
       setAwaiting(false)
       return
     }
-    if (id !== requestIdRef.current) return
 
     const uci = response.move_uci
     const from = uci.slice(0, 2)
