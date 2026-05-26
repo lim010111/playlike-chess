@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[MEDIUM] uphold src/web/app/hooks/useChessSession.ts:99 — src/web/app/hooks/useChessSession.ts:85: `setError(apiErr)` — sibling rollback branch surfaces the error; this catch silently drops it\n\nblock_count: 0\nbypass_eligible: yes\naction: merge ok\n",
+      "lines": [
+        "[MEDIUM] uphold src/web/app/hooks/useChessSession.ts:99 — src/web/app/hooks/useChessSession.ts:85: `setError(apiErr)` — sibling rollback branch surfaces the error; this catch silently drops it"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "medium",
+      "verdict": "uphold",
+      "block": false
+    }
+  ]
+}

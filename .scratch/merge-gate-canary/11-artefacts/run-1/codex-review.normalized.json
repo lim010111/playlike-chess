@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Reviewed `origin/main...HEAD`. Diff is 2 files: canary brief plus a one-line deletion in `useChessSession`. `git diff --check` passes. Targeted web tests could not run because `node_modules` is missing (`vitest: not found`).",
+    "findings": [
+      {
+        "severity": "medium",
+        "title": "Illegal engine moves now roll back silently without surfacing an error",
+        "body": "`requestEngineMove` clears `error` before calling `/move`, then this catch path rolls back the user's move and returns without restoring any error state. When the engine returns malformed or illegal UCI, the board snaps back, history is trimmed, `awaiting` clears, and `App` never renders its alert because `session.error` remains null. That hides an engine/API contract violation from the user and from operators, whereas the adjacent POST failure path still surfaces `ApiError`.",
+        "file": "src/web/app/hooks/useChessSession.ts",
+        "line_start": 99,
+        "line_end": 104,
+        "confidence": 0.96,
+        "recommendation": "Restore `setError(new ApiError(0, `engine returned illegal move \"${uci}\"`))` in this catch block and add a hook regression test that mocks an illegal `move_uci` response and asserts rollback plus a non-null error."
+      }
+    ],
+    "next_steps": [
+      "Do not merge this branch as product code; the added canary brief explicitly marks it as a deliberate defect injection.",
+      "Install web dependencies before verification, then run `pnpm test -- useChessSession` from `src/web`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}
