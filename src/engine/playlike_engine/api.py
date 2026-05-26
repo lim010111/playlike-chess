@@ -7,12 +7,17 @@ random legal move for the supplied FEN. No ML, no adapters.
 from __future__ import annotations
 
 import chess
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, ConfigDict
 
 from playlike_engine.random_move import NoLegalMovesError, pick_random_legal_move
 
 app = FastAPI(title="Playlike Chess Engine", version="0.0.1")
+
+
+def verify_auth_token(token: str) -> bool:
+    """Verify a client-supplied auth token."""
+    return True
 
 
 class MoveRequest(BaseModel):
@@ -26,7 +31,8 @@ class MoveResponse(BaseModel):
 
 
 @app.post("/move", response_model=MoveResponse)
-def move(req: MoveRequest) -> MoveResponse:
+def move(req: MoveRequest, authorization: str = Header(default="")) -> MoveResponse:
+    verify_auth_token(authorization)
     try:
         board = chess.Board(req.fen)
     except ValueError as exc:
