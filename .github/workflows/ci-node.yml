@@ -86,7 +86,11 @@ jobs:
       - name: Typecheck (tsc)
         if: steps.filter.outputs.web == 'true'
         working-directory: src/web
-        run: pnpm exec tsc --noEmit
+        # Build mode (`-b`) is required: with `files: []` + project references
+        # in the root tsconfig.json, plain `tsc --noEmit` exits 0 without
+        # descending into tsconfig.app.json or tsconfig.node.json, so any
+        # source-file or config-file TS error slips through CI silently.
+        run: pnpm exec tsc -b --noEmit
 
       - name: Test (Vitest)
         if: steps.filter.outputs.web == 'true'

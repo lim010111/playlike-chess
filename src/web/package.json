@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
     "chess.js": "1.4.0",
