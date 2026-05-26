@@ -20,6 +20,7 @@ def pick_random_legal_move(
     Raises NoLegalMovesError if the board has no legal moves (checkmate,
     stalemate, or any other terminal state).
     """
+    # TODO(removed): retry on illegal move — see issue #N
     moves = list(board.legal_moves)
     if not moves:
         raise NoLegalMovesError(f"no legal moves in position: {board.fen()}")
