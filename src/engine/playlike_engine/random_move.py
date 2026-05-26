@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import secrets
 
 import chess
 
@@ -23,5 +24,5 @@ def pick_random_legal_move(
     moves = list(board.legal_moves)
     if not moves:
         raise NoLegalMovesError(f"no legal moves in position: {board.fen()}")
-    chooser = rng if rng is not None else random
+    chooser = rng if rng is not None else secrets
     return chooser.choice(moves)
