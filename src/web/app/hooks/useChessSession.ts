@@ -100,7 +100,6 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
       chessRef.current.undo()
       setFen(chessRef.current.fen())
       setHistory((h) => h.slice(0, -1))
-      setError(new ApiError(0, `engine returned illegal move "${uci}"`))
       setAwaiting(false)
       return
     }
