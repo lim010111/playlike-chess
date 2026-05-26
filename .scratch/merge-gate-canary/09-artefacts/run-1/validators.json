@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[HIGH] uphold src/web/app/hooks/useChessSession.ts:82 — src/web/app/hooks/useChessSession.ts:82: setFen(chessRef.current.fen()) with no preceding chessRef.current.undo()\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[HIGH] uphold src/web/app/hooks/useChessSession.ts:82 — src/web/app/hooks/useChessSession.ts:82: setFen(chessRef.current.fen()) with no preceding chessRef.current.undo()"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "high",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}

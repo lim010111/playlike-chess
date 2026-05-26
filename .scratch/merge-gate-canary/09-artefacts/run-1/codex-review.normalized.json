@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "The diff removes the rollback that keeps chess.js, React FEN, and history synchronized after a failed engine request. This is a blocking state-corruption regression.",
+    "findings": [
+      {
+        "severity": "high",
+        "title": "Engine-error rollback leaves chess.js advanced after removing undo",
+        "body": "When postMove rejects for a non-terminal user move, the hook still advertises this path as a rollback and slices the last history entry, but it no longer undoes the already-applied user move in chessRef. setFen(chessRef.current.fen()) now publishes the advanced board instead of the pre-move board, while history removes the user's UCI move and error clears awaiting. The next move will be made from a position the engine rejected and a move_history that no longer matches the board, breaking the Web/Engine session contract and causing persistent client state corruption after any transient /move failure or 422 that is not terminal.",
+        "file": "src/web/app/hooks/useChessSession.ts",
+        "line_start": 82,
+        "line_end": 83,
+        "confidence": 0.99,
+        "recommendation": "Restore chessRef.current.undo() before setFen in the catch rollback path, and add a hook test that mocks a rejected /move after a legal user move and asserts FEN and history both return to the starting state."
+      }
+    ],
+    "next_steps": [
+      "Restore the missing chessRef.current.undo() in the requestEngineMove catch rollback branch.",
+      "Add targeted regression coverage for non-terminal engine failure rollback."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}
