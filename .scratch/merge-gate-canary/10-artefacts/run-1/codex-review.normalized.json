@@ -1,0 +1,25 @@
+{
+  "result": {
+    "verdict": "needs-attention",
+    "summary": "Reviewed the diff against `origin/main`. The branch contains a deliberate high-severity race regression in `useChessSession`; this should block merge. I did not run tests because the issue is directly visible in the one-line code change and current tests do not cover this race.",
+    "findings": [
+      {
+        "severity": "high",
+        "title": "Stale engine responses can now mutate the live game",
+        "body": "The removed success-path `requestIdRef` check allows an older `/move` response to continue after a newer request has advanced `requestIdRef.current`. That stale response then acts on the current `chessRef.current`, despite the invariant comment above saying the monotonic id exists specifically to prevent late responses from prior turns overwriting current state. A stale success can append the wrong engine move/FEN if legal in the newer position, or hit the illegal-move path and `undo()` the current live move.",
+        "file": "src/web/app/hooks/useChessSession.ts",
+        "line_start": 90,
+        "line_end": 104,
+        "confidence": 0.98,
+        "recommendation": "Restore `if (id !== requestIdRef.current) return` immediately after `await postMove(currentFen)` succeeds, before reading `response.move_uci`. Add a hook test with two deferred fetch responses resolving out of order to verify stale successes cannot change `fen`, `history`, `error`, or `awaiting`."
+      }
+    ],
+    "next_steps": [
+      "Restore the deleted success-path stale-response guard.",
+      "Add an out-of-order response regression test for `useChessSession`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}

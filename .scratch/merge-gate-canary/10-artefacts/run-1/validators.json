@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[HIGH] uphold src/web/app/hooks/useChessSession.ts:90 — src/web/app/hooks/useChessSession.ts:48: \"Monotonic id so a late-arriving /move response from a prior turn cannot overwrite state for the current turn\"\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[HIGH] uphold src/web/app/hooks/useChessSession.ts:90 — src/web/app/hooks/useChessSession.ts:48: \"Monotonic id so a late-arriving /move response from a prior turn cannot overwrite state for the current turn\""
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "high",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}
