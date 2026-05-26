@@ -6,12 +6,12 @@ outside the narrative block; mechanical sections are regenerated every run._
 <!-- narrative:start -->
 ## Current focus
 
-이슈 01 Phase 2 (Frontend skeleton). Phase 1(백엔드 `/move` + uv CI)은 PR #10·#11로 머지 완료(3/12). 이 워크트리(`worktree-01-random-move-tracer-p2`)는 Phase 2 전용이며 아직 작업 시작 전.
+이슈 01 Phase 2 (Frontend skeleton) **머지 완료** — PR #20 (2026-05-26). 이 워크트리에서 마무리한 일: `src/web/` React 19 + `react-chessboard` v5 + `chess.js` 스켈레톤, 커스텀 promotion picker(under-promotion 지원), `isGameOver()` 보드 동결, `apiClient_test.ts` + `useChessSession_test.ts`(promotion 훅 테스트 포함), `src/web/**` path-filtered `ci-node.yml`, 엔진/웹 AGENTS.md에 두-터미널 dev 시작 가이드 추가, Codex 리뷰 후속 수정(`tsc -b --noEmit` + `vitest/config` import로 silent typecheck 구멍 막음). 진행률 9/13.
 
 ## Start here next session
 
-- 이슈 01 Phase 2 — `src/web/` 아래 React + `react-chessboard` 스켈레톤, `chess.js` 드래그/합법수 검증, `/move` 호출, `isGameOver()`에서 보드 동결, 그리고 `src/web/**` path-filtered 프론트엔드 CI 워크플로 추가.
-- 시작점: `.scratch/playlike-chess/issues/01-random-move-tracer.md` Phase 2 섹션의 5개 AC.
+- 이슈 01 Phase 3 (Session lifecycle, 4개 AC) — 5-way Terminal-state 분기(checkmate/stalemate/threefold/50-move/insufficient material)와 UI 라벨링, 새 Session 시작(페이지 리로드 없이), end-to-end 플레이, SAN move list 표시.
+- 시작점: `.scratch/playlike-chess/issues/01-random-move-tracer.md` Phase 3 섹션. Phase 2 워크트리는 깨끗하니 새 브랜치/워크트리에서 진행.
 
 ## Open decisions
 
@@ -21,11 +21,11 @@ outside the narrative block; mechanical sections are regenerated every run._
 
 ## playlike-chess
 
-`█░░░░░░░░░░░░░░░░░░░░░` 3/84 acceptance criteria met (4%)
+`██░░░░░░░░░░░░░░░░░░░░` 9/84 acceptance criteria met (11%)
 
 | # | Issue | Triage | Criteria | State | Blocked by |
 |---|-------|--------|----------|-------|-----------|
-| 01 | Random-move tracer bullet | `ready-for-agent` | 3/13 | 🔵 in-progress | — |
+| 01 | Random-move tracer bullet | `ready-for-agent` | 9/13 | 🔵 in-progress | — |
 | 02 | Toy ML tracer bullet | `ready-for-agent` | 0/11 | ⛔ blocked | #01 |
 | 03 | Real Base model training | `ready-for-agent` | 0/13 | ⛔ blocked | #02 |
 | 04 | First Adapter end-to-end (Magnus) | `ready-for-agent` | 0/17 | ⛔ blocked | #03 |
