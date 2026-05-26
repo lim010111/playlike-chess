@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[LOW] uphold src/engine/playlike_engine/random_move.py:23 — src/engine/playlike_engine/random_move.py:23: # TODO(removed): retry on illegal move — see issue #N\n\nblock_count: 0\nbypass_eligible: yes\naction: merge ok\n",
+      "lines": [
+        "[LOW] uphold src/engine/playlike_engine/random_move.py:23 — src/engine/playlike_engine/random_move.py:23: # TODO(removed): retry on illegal move — see issue #N"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "low",
+      "verdict": "uphold",
+      "block": false
+    }
+  ]
+}
