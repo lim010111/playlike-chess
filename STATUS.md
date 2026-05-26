@@ -6,25 +6,26 @@ outside the narrative block; mechanical sections are regenerated every run._
 <!-- narrative:start -->
 ## Current focus
 
-_아직 코드 없음 — 설계 단계 (`docs/design-foundation` 브랜치). 다음 구체적 작업은 이슈 01._
+이슈 01 Phase 2 (Frontend skeleton). Phase 1(백엔드 `/move` + uv CI)은 PR #10·#11로 머지 완료(3/12). 이 워크트리(`worktree-01-random-move-tracer-p2`)는 Phase 2 전용이며 아직 작업 시작 전.
 
 ## Start here next session
 
-- 이슈 01 (Random-move tracer bullet) — blocker 없음, 바로 시작 가능.
+- 이슈 01 Phase 2 — `src/web/` 아래 React + `react-chessboard` 스켈레톤, `chess.js` 드래그/합법수 검증, `/move` 호출, `isGameOver()`에서 보드 동결, 그리고 `src/web/**` path-filtered 프론트엔드 CI 워크플로 추가.
+- 시작점: `.scratch/playlike-chess/issues/01-random-move-tracer.md` Phase 2 섹션의 5개 AC.
 
 ## Open decisions
 
-- (미결 사항을 여기에 적어둘 것 — 없으면 비워둠)
+- (없음)
 
 <!-- narrative:end -->
 
 ## playlike-chess
 
-`█░░░░░░░░░░░░░░░░░░░░░` 3/83 acceptance criteria met (4%)
+`█░░░░░░░░░░░░░░░░░░░░░` 3/84 acceptance criteria met (4%)
 
 | # | Issue | Triage | Criteria | State | Blocked by |
 |---|-------|--------|----------|-------|-----------|
-| 01 | Random-move tracer bullet | `ready-for-agent` | 3/12 | 🔵 in-progress | — |
+| 01 | Random-move tracer bullet | `ready-for-agent` | 3/13 | 🔵 in-progress | — |
 | 02 | Toy ML tracer bullet | `ready-for-agent` | 0/11 | ⛔ blocked | #01 |
 | 03 | Real Base model training | `ready-for-agent` | 0/13 | ⛔ blocked | #02 |
 | 04 | First Adapter end-to-end (Magnus) | `ready-for-agent` | 0/17 | ⛔ blocked | #03 |

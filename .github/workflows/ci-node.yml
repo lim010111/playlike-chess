@@ -1,0 +1,103 @@
+name: CI (Node)
+
+# Workflow is intentionally NOT path-filtered at the trigger level:
+# `pull_request.paths` would silently skip the workflow on PRs that don't
+# touch web files, leaving the check status absent. If anyone later sets
+# this job as a required branch-protection check, those PRs would be stuck
+# waiting forever. Instead, the workflow always runs and reports a status;
+# the web-specific steps below gate on a path filter computed inside
+# the job (`dorny/paths-filter`). Mirrors the design in ci-python.yml.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # `dorny/paths-filter` queries the GitHub Pulls API
+  # (`GET /repos/.../pulls/{number}/files`) on pull_request events to compute
+  # the changed-files list; that endpoint requires `pull-requests: read`.
+  # Without it the filter step fails on PRs and the workflow cannot report
+  # a status — defeating the always-runs-and-reports property this design
+  # depends on for required-check safety.
+  pull-requests: read
+
+jobs:
+  check:
+    name: lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect web-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            web:
+              - 'src/web/**'
+              - '.github/workflows/ci-node.yml'
+
+      - name: Skip notice
+        if: steps.filter.outputs.web == 'false'
+        run: echo "No web-relevant changes; frontend lint/typecheck/test/build steps skipped. Check reports green."
+
+      - name: Install pnpm
+        if: steps.filter.outputs.web == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          # Pin pnpm major; the exact version is locked by
+          # src/web/package.json's `packageManager` field, which Corepack
+          # enforces. Bump deliberately when a new major lands.
+          version: 10
+
+      - name: Setup Node
+        if: steps.filter.outputs.web == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: src/web/.nvmrc
+          cache: 'pnpm'
+          cache-dependency-path: src/web/pnpm-lock.yaml
+
+      # Single-package layout (NOT pnpm workspace): lockfile lives at
+      # src/web/pnpm-lock.yaml, install runs inside src/web. This mirrors
+      # src/engine's per-context boundary (its own pyproject.toml + uv.lock,
+      # no root workspace orchestration). Do not introduce a root
+      # pnpm-workspace.yaml or move the lockfile to repo root — that would
+      # reintroduce monorepo orchestration the per-context split deliberately
+      # avoided. (Some ci-researcher proposals mentioned pnpm workspace mode;
+      # rejected here for boundary-symmetry reasons.)
+      - name: Install dependencies
+        if: steps.filter.outputs.web == 'true'
+        working-directory: src/web
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint + format check (Biome)
+        if: steps.filter.outputs.web == 'true'
+        working-directory: src/web
+        run: pnpm exec biome check .
+
+      - name: Typecheck (tsc)
+        if: steps.filter.outputs.web == 'true'
+        working-directory: src/web
+        # Build mode (`-b`) is required: with `files: []` + project references
+        # in the root tsconfig.json, plain `tsc --noEmit` exits 0 without
+        # descending into tsconfig.app.json or tsconfig.node.json, so any
+        # source-file or config-file TS error slips through CI silently.
+        run: pnpm exec tsc -b --noEmit
+
+      - name: Test (Vitest)
+        if: steps.filter.outputs.web == 'true'
+        working-directory: src/web
+        run: pnpm exec vitest run
+
+      - name: Build (Vite)
+        if: steps.filter.outputs.web == 'true'
+        working-directory: src/web
+        run: pnpm exec vite build
