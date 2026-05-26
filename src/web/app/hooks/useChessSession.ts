@@ -79,7 +79,6 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
         setAwaiting(false)
         return
       }
-      chessRef.current.undo()
       setFen(chessRef.current.fen())
       setHistory((h) => h.slice(0, -1))
       setError(apiErr)
