@@ -1,0 +1,10 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "block_count: 0\nbypass_eligible: yes\naction: no findings to validate\n",
+      "lines": []
+    }
+  ],
+  "aggregate": []
+}

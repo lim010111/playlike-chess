@@ -1,0 +1,14 @@
+{
+  "result": {
+    "verdict": "approve",
+    "summary": "No blocking findings. The diff only switches the default chooser from the `random` module to `secrets` while preserving injected seeded RNG behavior; I did not find a caller contract this breaks.",
+    "findings": [],
+    "next_steps": [
+      "Verification attempted: `git diff --check` passed and `python -m compileall -q src/engine/playlike_engine` passed.",
+      "Full engine checks could not run because this environment lacks `uv`, `pytest`, `ruff`, `pyrefly`, and `python-chess`."
+    ]
+  },
+  "codex": {
+    "status": "ok"
+  }
+}
