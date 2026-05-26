@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "name": "claude",
+      "raw_stdout": "[CRITICAL] uphold src/engine/playlike_engine/api.py:34 — src/engine/playlike_engine/api.py:35: verify_auth_token(authorization)  # return value ignored; line 20: return True\n\nblock_count: 1\nbypass_eligible: no\naction: apply fixes for 1 upheld finding(s)\n",
+      "lines": [
+        "[CRITICAL] uphold src/engine/playlike_engine/api.py:34 — src/engine/playlike_engine/api.py:35: verify_auth_token(authorization)  # return value ignored; line 20: return True"
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "finding_id": "finding-0",
+      "severity": "critical",
+      "verdict": "uphold",
+      "block": true
+    }
+  ]
+}
