@@ -21,11 +21,11 @@ outside the narrative block; mechanical sections are regenerated every run._
 
 ## playlike-chess
 
-`██░░░░░░░░░░░░░░░░░░░░` 9/91 acceptance criteria met (10%)
+`█████░░░░░░░░░░░░░░░░░` 19/91 acceptance criteria met (21%)
 
 | # | Issue | Triage | Criteria | State | Blocked by |
 |---|-------|--------|----------|-------|-----------|
-| 01 | Random-move tracer bullet | `ready-for-agent` | 9/20 | 🔵 in-progress | — |
+| 01 | Random-move tracer bullet | `ready-for-agent` | 19/20 | 🔵 in-progress | — |
 | 02 | Toy ML tracer bullet | `ready-for-agent` | 0/11 | ⛔ blocked | #01 |
 | 03 | Real Base model training | `ready-for-agent` | 0/13 | ⛔ blocked | #02 |
 | 04 | First Adapter end-to-end (Magnus) | `ready-for-agent` | 0/17 | ⛔ blocked | #03 |

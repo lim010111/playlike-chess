@@ -7,6 +7,13 @@ export type HistoryEntry = { uci: string; san: string }
 export type PendingPromotion = { from: Square; to: Square }
 export type PromotionPiece = 'q' | 'r' | 'b' | 'n'
 
+export type TerminalState =
+  | { kind: 'checkmate'; winner: Color }
+  | { kind: 'stalemate' }
+  | { kind: 'threefold-repetition' }
+  | { kind: 'fifty-move-rule' }
+  | { kind: 'insufficient-material' }
+
 export type PieceDropArgs = {
   sourceSquare: string
   targetSquare: string | null
@@ -15,7 +22,7 @@ export type PieceDropArgs = {
 export type ChessSession = {
   fen: string
   history: HistoryEntry[]
-  isGameOver: boolean
+  terminal: TerminalState | null
   awaiting: boolean
   error: ApiError | null
   humanColor: Color
@@ -24,6 +31,7 @@ export type ChessSession = {
   onPieceDrop: (args: PieceDropArgs) => boolean
   resolvePromotion: (piece: PromotionPiece) => void
   cancelPromotion: () => void
+  resetSession: () => void
 }
 
 export type UseChessSessionOptions = {
@@ -34,31 +42,45 @@ export type UseChessSessionOptions = {
   initialFen?: string
 }
 
+// Predicate order matters: chess.js `isDraw()` returns true for stalemate,
+// threefold, and insufficient-material as well, so each specific predicate is
+// checked first and `isDraw()` is the fifty-move-rule fallback. chess.js v1
+// exposes no dedicated fifty-move-only predicate.
+function detectTerminal(chess: Chess): TerminalState | null {
+  if (chess.isCheckmate()) {
+    return { kind: 'checkmate', winner: chess.turn() === 'w' ? 'black' : 'white' }
+  }
+  if (chess.isStalemate()) return { kind: 'stalemate' }
+  if (chess.isThreefoldRepetition()) return { kind: 'threefold-repetition' }
+  if (chess.isInsufficientMaterial()) return { kind: 'insufficient-material' }
+  if (chess.isDraw()) return { kind: 'fifty-move-rule' }
+  return null
+}
+
 export function useChessSession(options: UseChessSessionOptions): ChessSession {
-  // humanColor='black' deferred to Phase 3 / issue #05: engine must move first,
-  // board orientation flips, and the color-selection UI ships together as one
+  // humanColor='black' deferred to issue #05: engine must move first, board
+  // orientation flips, and the color-selection UI ships together as one
   // coherent slice. Guard rather than silently behaving as white.
   if (options.humanColor === 'black') {
     throw new Error(
-      "useChessSession: humanColor='black' is not implemented in Phase 2 (deferred to Phase 3 / issue #05).",
+      "useChessSession: humanColor='black' is not implemented in Phase 2/3 (deferred to issue #05).",
     )
   }
 
   const chessRef = useRef<Chess>(new Chess(options.initialFen))
-  // Monotonic id so a late-arriving /move response from a prior turn cannot
-  // overwrite state for the current turn (defensive against any race the input
-  // lock might miss; e.g. rollback-then-new-move while the prior request is
-  // still in flight).
+  // Monotonic id so a late-arriving /move response from a prior turn (or a
+  // prior Session, after resetSession()) cannot overwrite state for the
+  // current turn.
   const requestIdRef = useRef(0)
 
   const [fen, setFen] = useState(chessRef.current.fen())
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [awaiting, setAwaiting] = useState(false)
-  const [isGameOver, setIsGameOver] = useState(false)
+  const [terminal, setTerminal] = useState<TerminalState | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
   const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null)
 
-  const canDrag = !awaiting && !isGameOver && pendingPromotion === null
+  const canDrag = !awaiting && terminal === null && pendingPromotion === null
 
   const requestEngineMove = useCallback(async (currentFen: string) => {
     const id = ++requestIdRef.current
@@ -71,11 +93,12 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
     } catch (e) {
       if (id !== requestIdRef.current) return
       const apiErr = e instanceof ApiError ? e : new ApiError(0, String(e))
-      // Invariant 6 (422 defensive): trust local chess.isGameOver(). If the
-      // user's move was actually terminal, freeze. Otherwise treat as a
-      // genuine failure and roll back (Invariant 5).
-      if (chessRef.current.isGameOver()) {
-        setIsGameOver(true)
+      // Invariant 6 (422 defensive): trust local terminal detection. If the
+      // user's move was actually terminal, the engine had no legal reply and
+      // the right thing is to surface the terminal, not the error.
+      const localTerminal = detectTerminal(chessRef.current)
+      if (localTerminal) {
+        setTerminal(localTerminal)
         setAwaiting(false)
         return
       }
@@ -107,8 +130,7 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
 
     setHistory((h) => [...h, { uci, san: mv.san }])
     setFen(chessRef.current.fen())
-    // Invariant 4: re-check terminal state after the engine's reply.
-    if (chessRef.current.isGameOver()) setIsGameOver(true)
+    setTerminal(detectTerminal(chessRef.current))
     setAwaiting(false)
   }, [])
 
@@ -117,11 +139,12 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
       setHistory((h) => [...h, { uci, san: mv.san }])
       const newFen = chessRef.current.fen()
       setFen(newFen)
-      // Invariant 2: check terminal state BEFORE POST. If the user's move
-      // ended the game (checkmate, stalemate, etc.) the engine has no legal
-      // reply — POSTing would just earn a 422.
-      if (chessRef.current.isGameOver()) {
-        setIsGameOver(true)
+      // Check terminal BEFORE POSTing. If the user's move ended the Session
+      // (checkmate, stalemate, etc.) the engine has no legal reply — POSTing
+      // would just earn a 422.
+      const localTerminal = detectTerminal(chessRef.current)
+      if (localTerminal) {
+        setTerminal(localTerminal)
         return
       }
       void requestEngineMove(newFen)
@@ -131,10 +154,10 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
 
   const onPieceDrop = useCallback(
     ({ sourceSquare, targetSquare }: PieceDropArgs): boolean => {
-      // Invariant 3: sync-reject when locked. react-chessboard also gates
-      // drags via canDragPiece, but onPieceDrop is the authoritative gate
-      // because the user could still drop a piece that started dragging
-      // before the lock engaged.
+      // Sync-reject when locked. react-chessboard also gates drags via
+      // allowDragging, but onPieceDrop is the authoritative gate because the
+      // user could still drop a piece that started dragging before the lock
+      // engaged.
       if (!canDrag || targetSquare === null) return false
 
       const from = sourceSquare as Square
@@ -183,10 +206,24 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
     setPendingPromotion(null)
   }, [])
 
+  const resetSession = useCallback(() => {
+    // Bump the request id so any /move response still in flight from the
+    // prior Session is dropped on arrival by the stale-id guard.
+    requestIdRef.current++
+    const fresh = new Chess()
+    chessRef.current = fresh
+    setFen(fresh.fen())
+    setHistory([])
+    setTerminal(null)
+    setPendingPromotion(null)
+    setError(null)
+    setAwaiting(false)
+  }, [])
+
   return {
     fen,
     history,
-    isGameOver,
+    terminal,
     awaiting,
     error,
     humanColor: options.humanColor,
@@ -195,5 +232,6 @@ export function useChessSession(options: UseChessSessionOptions): ChessSession {
     onPieceDrop,
     resolvePromotion,
     cancelPromotion,
+    resetSession,
   }
 }
