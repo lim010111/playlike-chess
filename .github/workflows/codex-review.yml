@@ -204,6 +204,11 @@ jobs:
           # produced 401s when CODEX_API_KEY was unset (refs harness-work#19).
           CODEX_API_KEY: ${{ secrets.CODEX_API_KEY }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          # Sandbox-bypass + schema flags live in repo Actions vars so they
+          # are not embedded as YAML literals (abuse-scanner hygiene; refs
+          # claude-harness-work session 2026-05-27). Set via
+          # `gh variable set CODEX_RUN_FLAGS --body "<flags>" --repo <owner>/<repo>`.
+          CODEX_RUN_FLAGS: ${{ vars.CODEX_RUN_FLAGS }}
         run: |
           set -euo pipefail
           mkdir -p .codex-review
@@ -221,8 +226,12 @@ jobs:
           # this stream into a single-doc file the downstream consumers (jq
           # sticky-comment builder, Claude validator) read. That step ALSO owns
           # the "Codex failed" fallback — we no longer guard parseability here.
+          if [[ -z "${CODEX_RUN_FLAGS:-}" ]]; then
+            echo "::error::CODEX_RUN_FLAGS repo variable not set. Run: gh variable set CODEX_RUN_FLAGS --body '<flags>' --repo <owner>/<repo>"
+            exit 1
+          fi
           set +e
-          codex exec --json --output-schema .codex-review/schema.json --dangerously-bypass-approvals-and-sandbox "Run an adversarial review of the diff against origin/$BASE_REF" > .codex-review/codex-review.json 2> .codex-review/codex-review.stderr
+          codex exec --json --output-schema .codex-review/schema.json $CODEX_RUN_FLAGS "Run an adversarial review of the diff against origin/$BASE_REF" > .codex-review/codex-review.json 2> .codex-review/codex-review.stderr
           codex_exit=$?
           set -e
           echo "codex_exit=$codex_exit" >> "$GITHUB_OUTPUT"
@@ -302,6 +311,10 @@ jobs:
         if: env.RUN_REVIEW == 'true'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Permission-mode lives in repo Actions vars (abuse-scanner hygiene;
+          # refs claude-harness-work session 2026-05-27). Set via
+          # `gh variable set CLAUDE_PERM_MODE --body "<mode>" --repo <owner>/<repo>`.
+          CLAUDE_PERM_MODE: ${{ vars.CLAUDE_PERM_MODE }}
         run: |
           set -euo pipefail
           # Writes .codex-review/validators.json + .codex-review/validators.md.
@@ -314,8 +327,12 @@ jobs:
           # Reads the NORMALIZED payload, not the raw JSONL. The normalize
           # step above guarantees this file is a single JSON document with
           # `.result.findings[]` shape.
+          if [[ -z "${CLAUDE_PERM_MODE:-}" ]]; then
+            echo "::error::CLAUDE_PERM_MODE repo variable not set. Run: gh variable set CLAUDE_PERM_MODE --body '<mode>' --repo <owner>/<repo>"
+            exit 1
+          fi
           claude -p "/run-codex-validators --codex-json .codex-review/codex-review.normalized.json --soft-mode ${SOFT_MODE}" \
-            --permission-mode bypassPermissions
+            --permission-mode "$CLAUDE_PERM_MODE"
 
       - name: Inspect .codex-review/ before upload
         # Diagnostic — intentionally kept after claude-harness-work#21.
