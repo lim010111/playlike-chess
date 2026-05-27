@@ -1,4 +1,6 @@
 import { Board } from './components/Board'
+import { MoveList } from './components/MoveList'
+import { TerminalBanner } from './components/TerminalBanner'
 import { useChessSession } from './hooks/useChessSession'
 
 export function App() {
@@ -12,9 +14,10 @@ export function App() {
           {session.error.message}
         </p>
       )}
-      {session.isGameOver && (
-        <p style={{ marginTop: '0.75rem' }}>Game over. (Terminal-state UI lands in Phase 3.)</p>
+      {session.terminal && (
+        <TerminalBanner terminal={session.terminal} onNewSession={session.resetSession} />
       )}
+      <MoveList history={session.history} />
     </main>
   )
 }
