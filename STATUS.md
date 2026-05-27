@@ -21,16 +21,16 @@ outside the narrative block; mechanical sections are regenerated every run._
 
 ## playlike-chess
 
-`█████░░░░░░░░░░░░░░░░░` 19/91 acceptance criteria met (21%)
+`█████░░░░░░░░░░░░░░░░░` 20/91 acceptance criteria met (22%)
 
 | # | Issue | Triage | Criteria | State | Blocked by |
 |---|-------|--------|----------|-------|-----------|
-| 01 | Random-move tracer bullet | `ready-for-agent` | 19/20 | 🔵 in-progress | — |
-| 02 | Toy ML tracer bullet | `ready-for-agent` | 0/11 | ⛔ blocked | #01 |
+| 01 | Random-move tracer bullet | `ready-for-agent` | 20/20 | ✅ done | — |
+| 02 | Toy ML tracer bullet | `ready-for-agent` | 0/11 | ⬜ todo | #01 |
 | 03 | Real Base model training | `ready-for-agent` | 0/13 | ⛔ blocked | #02 |
 | 04 | First Adapter end-to-end (Magnus) | `ready-for-agent` | 0/17 | ⛔ blocked | #03 |
 | 05 | Full Roster + selector UI | `ready-for-agent` | 0/10 | ⛔ blocked | #04 |
-| 06 | Stockfish.wasm comparison panel | `ready-for-agent` | 0/9 | ⛔ blocked | #01 |
+| 06 | Stockfish.wasm comparison panel | `ready-for-agent` | 0/9 | ⬜ todo | #01 |
 | 07 | Evaluation Harness — four checks | `ready-for-agent` | 0/11 | ⛔ blocked | #04 |
 
 State is derived: all criteria checked → `done`; some → `in-progress`; none
