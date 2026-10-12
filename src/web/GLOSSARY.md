@@ -26,7 +26,7 @@ _Avoid_: "game-over event" — **Terminal state** is the canonical term, and it 
 ## Relationships
 
 - A **Session** is constituted by one **Opponent** (an Adapter), one human color choice, and a growing `move_history` (the same UCI list the Engine receives on every `/move` request). When a **Terminal state** is reached, the Session ends.
-- **Web ↔ Engine**: see `src/engine/CONTEXT.md`. Web sends Position + `adapter_id` + `move_history` per turn; Engine returns one legal Move. Web owns Session storage; the Engine is stateless per request.
+- **Web ↔ Engine**: see `src/engine/GLOSSARY.md`. Web sends Position + `adapter_id` + `move_history` per turn; Engine returns one legal Move. Web owns Session storage; the Engine is stateless per request.
 - **Web ↔ Stockfish (in-browser)**: `stockfish.wasm` runs in a Web Worker and analyses the current Position for the comparison panel. Stockfish never sees the Opponent's identity or the Adapter — it is an independent analysis source rendered side by side with the Adapter's Move.
 
 ## Implementation notes
