@@ -9,7 +9,7 @@ A single board state paired with the move actually played from it, encoded as `(
 _Avoid_: "state", "board" (overloaded with the rendered UI board)
 
 **Game**:
-A complete sequence of Positions from one chess game in the training/evaluation archives, with one **Player** as White and one as Black. Archived, immutable, source-of-truth for training. Distinct from Web's **Session** (live play, one human + one Adapter — see `src/web/CONTEXT.md`).
+A complete sequence of Positions from one chess game in the training/evaluation archives, with one **Player** as White and one as Black. Archived, immutable, source-of-truth for training. Distinct from Web's **Session** (live play, one human + one Adapter — see `src/web/GLOSSARY.md`).
 _Avoid_: "match" (reserved for self-play matches during evaluation); bare "Game" when meaning live browser play (use **Session** from Web context)
 
 **Player**:

@@ -38,4 +38,4 @@ Corepack.
 `app/` is the React source root (mirrors `src/engine/playlike_engine/` — a
 per-context package, not the Vite default `src/`). Tests are co-located with
 the module they cover and named `<module>_test.ts(x)`. See
-`src/web/CONTEXT.md` for domain vocabulary (Session, Opponent, Terminal state).
+`src/web/GLOSSARY.md` for domain vocabulary (Session, Opponent, Terminal state).
